@@ -354,10 +354,12 @@ def filter_users_by_email(email):
 
 
 def passthrough_next_redirect_url(request, url, redirect_field_name):
-    assert url.find("?") < 0  # TODO: Handle this case properly
     next_url = get_next_redirect_url(request, redirect_field_name)
     if next_url:
-        url = url + '?' + urlencode({redirect_field_name: next_url})
+        if url.find('?') == -1:
+            url = url + '?' + urlencode({redirect_field_name: next_url})
+        else:
+            url = url + '&' + urlencode({redirect_field_name: next_url})
     return url
 
 
