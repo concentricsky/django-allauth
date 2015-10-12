@@ -4,6 +4,7 @@ import re
 import warnings
 import json
 
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import render_to_string
@@ -20,7 +21,8 @@ except ImportError:
 
 from ..utils import (import_attribute, get_user_model,
                      generate_unique_username,
-                     resolve_url, get_current_site)
+                     resolve_url, get_current_site,
+                     build_absolute_uri)
 
 from . import app_settings
 
@@ -316,6 +318,41 @@ class DefaultAccountAdapter(object):
     def is_safe_url(self, url):
         from django.utils.http import is_safe_url
         return is_safe_url(url)
+
+    def get_email_confirmation_url(self, request, emailconfirmation):
+        """Constructs the email confirmation (activation) url.
+
+        Note that if you have architected your system such that email
+        confirmations are sent outside of the request context `request`
+        can be `None` here.
+        """
+        url = reverse(
+            "account_confirm_email",
+            args=[emailconfirmation.key])
+        ret = build_absolute_uri(
+            request,
+            url,
+            protocol=app_settings.DEFAULT_HTTP_PROTOCOL)
+        return ret
+
+    def send_confirmation_mail(self, request, emailconfirmation, signup):
+        current_site = get_current_site(request)
+        activate_url = self.get_email_confirmation_url(
+            request,
+            emailconfirmation)
+        ctx = {
+            "user": emailconfirmation.email_address.user,
+            "activate_url": activate_url,
+            "current_site": current_site,
+            "key": emailconfirmation.key,
+        }
+        if signup:
+            email_template = 'account/email/email_confirmation_signup'
+        else:
+            email_template = 'account/email/email_confirmation'
+        get_adapter().send_mail(email_template,
+                                emailconfirmation.email_address.email,
+                                ctx)
 
 
 def get_adapter():

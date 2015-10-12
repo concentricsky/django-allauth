@@ -1,3 +1,32 @@
+2015-07-29  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* David Friedman contributed Edmodo support, thanks!
+
+	* Added support for `ACCOUNT_LOGIN_ON_PASSWORD_RESET` (thanks
+	Julen!)
+
+2015-07-23  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* Version 0.22.0 released.
+
+2015-07-22  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* Reversal of the email confirmation url can now be overridden in
+	the adapter (`get_email_confirmation_url`). Additionally, the
+	complete confirmation email handling can be overridden via
+	`send_confirmation_mail`.
+
+	* Dropped support for Python 2.6 and Django <1.6.
+
+2015-07-21  Raymond Penners  <raymond.penners@intenct.nl>
+
+	* Template context processors are no longer used.
+
+	* The Facebook Graph API fields (/me/?fields=...) can now be
+	configured using the provider `FIELDS` setting.
+
+	* The default Facebook Graph API version is now v2.4.
+
 2015-07-02  Raymond Penners  <raymond.penners@intenct.nl>
 
 	* Version 0.21.0 released.

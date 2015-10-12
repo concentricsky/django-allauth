@@ -3,6 +3,18 @@ Changelog
 
 This chapter contains notes on upgrading.
 
+From 0.21.0
+***********
+
+- Dropped support for Python 2.6 and Django <1.6.
+
+- The default Facebook Graph API version is now v2.4.
+
+- Template context processors are no longer used. The context
+  processor for ``allauth.account`` was already empty, and the context
+  processor for ``allauth.socialaccount`` has been converted into the
+  :doc:`{% get_providers %} <templates>` template tag.
+
 
 From 0.20.0
 ***********

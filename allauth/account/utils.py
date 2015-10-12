@@ -8,6 +8,7 @@ except ImportError:
 import django
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.db import models
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.utils import six
@@ -48,6 +49,10 @@ def get_next_redirect_url(request, redirect_field_name="next"):
 
 
 def get_login_redirect_url(request, url=None, redirect_field_name="next"):
+    if url and callable(url):
+        # In order to be able to pass url getters around that depend
+        # on e.g. the authenticated state.
+        url = url()
     redirect_url \
         = (url
            or get_next_redirect_url(request,
@@ -311,7 +316,7 @@ def send_email_confirmation(request, user, signup=False):
                                       'email_confirmation_sent.txt',
                                       {'email': email})
     if signup:
-        request.session['account_user'] = user.pk
+        request.session['account_user'] = user_pk_to_url_str(user)
 
 
 def sync_user_email_addresses(user):
@@ -364,16 +369,27 @@ def passthrough_next_redirect_url(request, url, redirect_field_name):
 
 
 def user_pk_to_url_str(user):
+    """
+    This should return a string.
+    """
+    User = get_user_model()
+    if (hasattr(models, 'UUIDField')
+            and issubclass(type(User._meta.pk), models.UUIDField)):
+        return user.pk.hex
+
     ret = user.pk
     if isinstance(ret, six.integer_types):
         ret = int_to_base36(user.pk)
-    return ret
+    return str(ret)
 
 
 def url_str_to_user_pk(s):
     User = get_user_model()
     # TODO: Ugh, isn't there a cleaner way to determine whether or not
     # the PK is a str-like field?
+    if (hasattr(models, 'UUIDField')
+            and issubclass(type(User._meta.pk), models.UUIDField)):
+        return s
     try:
         User._meta.pk.to_python('a')
         pk = s
